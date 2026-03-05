@@ -1,0 +1,28 @@
+from flask import Flask, redirect, url_for, render_template, request
+
+a = Flask("__name__")
+
+user_data = {
+    "siva": {"password": "1234siva", "name": "siva"},
+    "krishna": {"password": "1234krishna", "name": "krishna"}}
+
+
+@a.route("/home")
+def home():
+    return render_template("home.html")
+
+@a.route("/login", methods=["GET","POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        if user_data[username]["password"] == password:
+             return redirect(url_for("home"))  
+        else :
+            return "the user is not registered"
+        
+    return render_template("login.html")
+    
+if __name__=="__main__": 
+    a.run(debug=True)
+    
