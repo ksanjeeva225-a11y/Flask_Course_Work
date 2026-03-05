@@ -1,0 +1,21 @@
+from flask import Flask, redirect, url_for, render_template, request
+
+a = Flask("__name__")
+@a.route("/home")
+def home():
+    return render_template("home.html", name="satish")
+
+@a.route("/<home>")
+def homepage(home):
+   if home in ["h","next","first","last","1"]:
+      f_name = request.args.get("first")
+      l_name = request.args.get("last")
+      sur = request.args.get("sur")
+      return render_template("home.html",fr_name=f_name,
+                                ls_name=l_name,sur_name=sur)
+
+   else:
+      return "page not found"
+   
+if __name__=="__main__":
+   a.run(debug=True)
