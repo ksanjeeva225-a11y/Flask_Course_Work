@@ -1,0 +1,53 @@
+from flask import Flask, redirect, url_for, render_template, request, session, flash
+ 
+ 
+a=Flask("_name_") 
+a.secret_key="my secure 123"
+ 
+ 
+user_data={"siva":{"password":"1234siva","name":"siva"}, 
+          "krishna":{"password":"1234krishna","name":"krishna"}} 
+ 
+@a.route("/",methods=["GET","POST"]) 
+def welcome(): 
+    return render_template("Welcome.html") 
+ 
+@a.route("/home/<u_name>",methods=["POST","GET"]) 
+def home(u_name): 
+   return render_template("home1.html" ,ac_name=u_name) 
+ 
+ 
+@a.route("/login", methods=["GET","POST"]) 
+def login(): 
+    if request.method=="POST": 
+        user=request.form["username"] 
+        password=request.form["password"] 
+        if user_data[user]["password"]==password: 
+            return redirect(url_for("home",u_name=user)) 
+        else: 
+            return  redirect(url_for("Register")) 
+ 
+    return render_template("login1.html") 
+ 
+@a.route("/register",methods=["GET","POST"]) 
+def register(): 
+    if request.method=="POST": 
+        user=request.form["username"] 
+        password=request.form["password"] 
+        name=request.form["name"] 
+        if user not in user_data: 
+            user_data[user]={"password":password,"name":name} 
+            return redirect(url_for("login")) 
+        else: 
+            return "you already have an account, please login"
+
+ 
+    return render_template("Register.html")          
+@a.route('/logout',methods=['GET','POST'])
+def logout():
+    session.pop("user", None)
+    flash("You have been logged out")
+    return redirect(url_for("welcome"))
+
+if __name__ =="__main__":
+    a.run(debug=True)
