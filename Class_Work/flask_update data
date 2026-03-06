@@ -1,0 +1,94 @@
+from flask import Flask, redirect, url_for, render_template, request ,session 
+  
+from datetime import timedelta 
+  
+a=Flask("__name__")  
+a.secret_key="my secure 1234" 
+a.permanent_session_lifetime=timedelta(minutes=10) 
+  
+user_data={"siva":{"password":"1234siva","name":"siva"},  
+          "krishna":{"password":"1234krishna","name":"krishna"}}  
+  
+@a.route("/",methods=["GET","POST"])  
+def welcome():  
+    return render_template("welcome.html")  
+  
+@a.route("/home/<u_name>",methods=["POST","GET"])  
+def home(u_name):  
+   return render_template("home1.html" ,ac_name=u_name)  
+  
+  
+@a.route("/login", methods=["GET","POST"])  
+def login():  
+    if request.method=="POST":  
+        user=request.form["username"]  
+        password=request.form["password"]  
+        user_exists=False 
+        for user_n in user_data: 
+           if user in user_data:  
+            if user_data[user]["password"]==password: 
+                user_exists =True 
+                session.permanent=True 
+                session["my session data"]=[user_data[user]["name"],user_data[user]["password"]] 
+                return redirect(url_for("home",u_name=session["my session data"][0]))  
+            else:  
+                return  render_template("login1.html",message_t="entered a wrong password plz check and correct") 
+             
+           else: 
+               return  render_template("login1.html",message_t=f"username {user} is not found plz register first ")  
+ 
+        if user_exists==False: 
+            return "the user is not exists" 
+    elif "my session data" in session: 
+        return redirect(url_for("home",u_name=session["my session data"][0])) 
+  
+    return render_template("login1.html",message_t="welcome to login page")  
+  
+@a.route("/register",methods=["GET","POST"])  
+def register():  
+    if request.method=="POST":  
+        user=request.form["username"]  
+        password=request.form["password"]  
+        name=request.form["name"]  
+        if user not in user_data:  
+            user_data[user]={"password":password,"name":name}  
+            return redirect(url_for("login"))  
+        else:  
+            return "you have an account plz login"  
+  
+    return render_template("register.html")  
+
+@a.route("/logout",methods=["GET","POST"]) 
+def logout(): 
+    session.pop("my session data",None) 
+    return redirect(url_for("welcome")) 
+
+ 
+@a.route("/update_password", methods=["GET","POST"])
+def update_password():
+   return render_template("update_page1.html", message_u="type the new password in the below boxes")
+
+@a.route("/update_mydata/<username>", methods=["GET", "POST", "PUT"])
+def update_mydata(username):
+   if request.method=="POST":
+       if request.form.get("method_")=="PUT":
+          new_password=request.form["new password"]
+          confirm_password=request.form["confirm password"]
+          if new_password==confirm_password:
+             for user_n in user_data:
+               if username in user_data:
+                 user_data[username]["password"]=new_password
+                 session.pop("my session data", None)
+                 return render_template("login1.html", message_t="new password updated plz login with new password")
+               else:
+                return render_template("update_page1.html", message_u="plz fill the same values in both the boxes")
+          else:
+             return "Invalid method plz update the method_ to PUT"
+   else:
+      return "Invalid method plz update the method to POST"
+
+
+
+ 
+if __name__=="__main__":  
+    a.run(debug=True) 
