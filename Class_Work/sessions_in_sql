@@ -1,0 +1,53 @@
+from flask import Flask, redirect, url_for, render_template, request, session
+from datetime import timedelta
+
+a = Flask(__name__)
+
+# Secret key (required for sessions)
+a.secret_key = "my_secure_1234"
+
+# Session lifetime
+a.permanent_session_lifetime = timedelta(minutes=10)
+
+# Fake database
+user_data = {
+    "siva": {"password": "1234siva", "name": "siva"},
+    "krishna": {"password": "1234krishna", "name": "krishna"}
+}
+
+# ---------------- LOGIN ----------------
+@a.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = request.form["username"]
+        password = request.form["password"]
+
+        if user in user_data and user_data[user]["password"] == password:
+            session.permanent = True
+            session["user"] = user_data[user]["name"]
+            return redirect(url_for("home"))
+        else:
+            return "Invalid username or password"
+
+    # If session already exists
+    if "user" in session:
+        return redirect(url_for("home"))
+
+    return render_template("login1.html")
+
+# ---------------- HOME ----------------
+@a.route("/home")
+def home():
+    if "user" in session:
+        return f"<h2>Welcome {session['user']}!</h2><br><a href='/logout'>Logout</a>"
+    else:
+        return redirect(url_for("login"))
+
+# ---------------- LOGOUT ----------------
+@a.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect(url_for("login"))
+
+if __name__ == "__main__":
+    a.run(debug=True)
